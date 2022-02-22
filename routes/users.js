@@ -30,9 +30,7 @@ router.put(
     console.log("verify token");
     next();
   },
-  (req, res, next) => {
-    res.send("edit user's info");
-  }
+  userController.updateUser
 );
 
 router.delete(
