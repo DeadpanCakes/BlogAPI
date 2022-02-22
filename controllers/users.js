@@ -9,12 +9,14 @@ module.exports.makeNewUser = [
   sanitize,
   (req, res, next) => {
     const { username, firstName, lastName } = req.body;
-    User.find({ username }).exec((err, existingUser) => {
+    console.log(req.body);
+    User.findOne({ username }).exec((err, existingUser) => {
       if (err) next(err);
       if (existingUser) {
+        console.log(existingUser);
         res.send("username taken");
       } else {
-        const newUser = newUser({
+        const newUser = new User({
           username,
           firstName,
           lastName,
@@ -25,6 +27,16 @@ module.exports.makeNewUser = [
           res.redirect("/");
         });
       }
+    });
+  },
+];
+
+module.exports.getUsers = [
+  sanitize,
+  (req, res, next) => {
+    User.find((err, users) => {
+      if (err) next(err);
+      res.json(users);
     });
   },
 ];
