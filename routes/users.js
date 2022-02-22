@@ -39,9 +39,7 @@ router.delete(
     console.log("verify token");
     next();
   },
-  (req, res, next) => {
-    res.send("delete existing user");
-  }
+  userController.deleteUser
 );
 
 module.exports = router;
