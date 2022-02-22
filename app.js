@@ -10,6 +10,12 @@ var router = require('./routes/index');
 
 var app = express();
 
+const {DEV_DB_URL} = process.env;
+const mongoDB = process.env.MONGO_URI || DEV_DB_URL;
+mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true});
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "MongoDB connection error"));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
