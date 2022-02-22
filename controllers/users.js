@@ -31,6 +31,16 @@ module.exports.postUser = [
   },
 ];
 
+module.exports.getUser = [
+  sanitize,
+  (req, res, next) => {
+    User.findById(req.params.id).exec((err, user) => {
+      if (err) next(err);
+      res.json(user);
+    });
+  },
+];
+
 module.exports.getUsers = [
   sanitize,
   (req, res, next) => {
