@@ -29,6 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/users', router.users);
 app.use("/api", router.comments);
 app.use("/api/posts", router.posts);
+app.use("/", (req, res) => res.send("Home Page"))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
