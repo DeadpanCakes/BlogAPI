@@ -19,9 +19,7 @@ router.get(
     console.log("verify token");
     next();
   },
-  (req, res, next) => {
-    res.send("find by id and return");
-  }
+  userController.getUser
 );
 
 router.post("/", userController.postUser);
