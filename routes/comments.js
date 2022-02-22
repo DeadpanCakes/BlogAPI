@@ -1,6 +1,6 @@
 const express = require("express");
 
-const router = express.router();
+const router = express.Router();
 
 router.get("/posts/:postid/comments", (req, res, next) => {
   res.send("return all comments associated with post");
