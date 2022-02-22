@@ -50,3 +50,16 @@ module.exports.getUsers = [
     });
   },
 ];
+
+module.exports.updateUser = [
+  sanitize,
+  (req, res, next) => {
+    User.findByIdAndUpdate(req.params.id, req.body).exec((err) => {
+      if (err) next(err);
+      User.findById(req.params.id).exec((err, user) => {
+        if (err) next(err);
+        res.json(user);
+      });
+    });
+  },
+];
