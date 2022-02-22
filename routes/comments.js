@@ -42,3 +42,5 @@ router.delete(
     console.log("delete comment");
   }
 );
+
+module.exports = router;

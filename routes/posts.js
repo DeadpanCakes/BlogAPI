@@ -35,3 +35,5 @@ router.delete(
     res.send("delete specified token");
   }
 );
+
+module.exports = router;
