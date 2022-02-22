@@ -5,7 +5,7 @@ const sanitize = (req, res, next) => {
   next();
 };
 
-module.exports.makeNewUser = [
+module.exports.postUser = [
   sanitize,
   (req, res, next) => {
     const { username, firstName, lastName } = req.body;

@@ -24,7 +24,7 @@ router.get(
   }
 );
 
-router.post("/", userController.makeNewUser);
+router.post("/", userController.postUser);
 
 router.put(
   "/:id",
