@@ -63,3 +63,13 @@ module.exports.updateUser = [
     });
   },
 ];
+
+module.exports.deleteUser = (req, res, next) => {
+  User.findByIdAndDelete(req.params.id).exec((err) => {
+    if (err) next(err);
+    User.find().exec((err, users) => {
+      if (err) next(err);
+      res.json(users);
+    });
+  });
+};
