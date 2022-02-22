@@ -1,6 +1,8 @@
 var express = require("express");
 var router = express.Router();
 
+const userController = require("../controllers/users");
+
 /* GET users listing. */
 router.get(
   "/",
@@ -8,9 +10,7 @@ router.get(
     console.log("verify token");
     next();
   },
-  function (req, res, next) {
-    res.send("respond with a resource");
-  }
+  userController.getUsers
 );
 
 router.get(
@@ -24,9 +24,7 @@ router.get(
   }
 );
 
-router.post("/", (req, res, next) => {
-  res.send("add new user to db");
-});
+router.post("/", userController.makeNewUser);
 
 router.put(
   "/:id",
