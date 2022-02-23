@@ -36,3 +36,10 @@ module.exports.getPost = (req, res, next) => {
     res.json(post);
   });
 };
+
+module.exports.updatePost = (req, res, next) => {
+  Post.findByIdAndUpdate(req.params.id, req.body).exec((err) => {
+    if (err) next(err);
+    res.redirect(req.params.id);
+  });
+};
