@@ -38,8 +38,17 @@ module.exports.getPost = (req, res, next) => {
 };
 
 module.exports.updatePost = (req, res, next) => {
-  Post.findByIdAndUpdate(req.params.id, req.body).exec((err) => {
+  Post.findByIdAndUpdate(req.params.id, req.body).exec((err, post) => {
     if (err) next(err);
-    res.redirect(req.params.id);
+    Post.findById(req.params.id).exec((err, post) => {
+      res.json(post);
+    });
+  });
+};
+
+module.exports.deletePost = (req, res, next) => {
+  Post.findByIdAndDelete(req.params.id).exec((err) => {
+    if (err) next(err);
+    res.redirect("/api/posts");
   });
 };
