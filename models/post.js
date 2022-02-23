@@ -7,8 +7,7 @@ const postSchema = new Schema({
   content: String,
   author: { type: Schema.Types.ObjectId, ref: "User" },
   tags: [String],
-  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
-  published: Boolean,
+  isPublished: Boolean,
   timestamp: Date,
   lastUpdate: Date,
 });
