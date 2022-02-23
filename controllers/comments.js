@@ -25,3 +25,10 @@ module.exports.postComment = [
     });
   },
 ];
+
+module.exports.getComments = (req, res, next) => {
+  Comment.find().exec((err, comments) => {
+    if (err) next(err);
+    res.json(comments);
+  });
+};
