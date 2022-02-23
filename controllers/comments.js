@@ -36,6 +36,18 @@ module.exports.getComments = (req, res, next) => {
 module.exports.getComment = (req, res, next) => {
   Comment.findById(req.params.id).exec((err, comment) => {
     if (err) next(err);
-    res.json(comment)
-  })
-}
+    res.json(comment);
+  });
+};
+
+module.exports.updateComment = [
+  sanitize,
+  (req, res, next) => {
+    Comment.findByIdAndUpdate(req.params.id).exec((err) => {
+      if (err) next(err);
+      Comment.findById(req.params.id).exec((err, comment) => {
+        res.json(comment);
+      });
+    });
+  },
+];
