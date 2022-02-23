@@ -41,6 +41,7 @@ module.exports.updatePost = (req, res, next) => {
   Post.findByIdAndUpdate(req.params.id, req.body).exec((err, post) => {
     if (err) next(err);
     Post.findById(req.params.id).exec((err, post) => {
+      if (err) next(err);
       res.json(post);
     });
   });
