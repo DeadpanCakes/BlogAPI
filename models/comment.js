@@ -8,4 +8,8 @@ const commentSchema = new Schema({
   content: String,
 });
 
+commentSchema.virtual("url").get(function () {
+  return `/${this.commentOf._id}/comments/${this._id}`;
+});
+
 module.exports = mongoose.model("Comment", commentSchema);
