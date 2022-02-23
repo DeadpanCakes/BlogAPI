@@ -32,3 +32,10 @@ module.exports.getComments = (req, res, next) => {
     res.json(comments);
   });
 };
+
+module.exports.getComment = (req, res, next) => {
+  Comment.findById(req.params.id).exec((err, comment) => {
+    if (err) next(err);
+    res.json(comment)
+  })
+}
