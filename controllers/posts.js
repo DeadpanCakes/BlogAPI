@@ -29,3 +29,10 @@ module.exports.getPosts = (req, res, next) => {
     res.json(posts);
   });
 };
+
+module.exports.getPost = (req, res, next) => {
+  Post.findById(req.params.id).exec((err, post) => {
+    if (err) next(err);
+    res.json(post);
+  });
+};
