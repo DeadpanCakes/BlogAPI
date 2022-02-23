@@ -22,3 +22,10 @@ module.exports.postPost = (req, res, next) => {
     res.redirect(newPost.url);
   });
 };
+
+module.exports.getPosts = (req, res, next) => {
+  Post.find().exec((err, posts) => {
+    if (err) next(err);
+    res.json(posts);
+  });
+};
