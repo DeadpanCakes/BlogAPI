@@ -1,3 +1,5 @@
+const { body, validatonResult } = require("express-validator");
+
 const Comment = require("../models/comment");
 
 const sanitize = (req, res, next) => {
@@ -6,20 +8,31 @@ const sanitize = (req, res, next) => {
 };
 
 module.exports.postComment = [
-  sanitize,
+  body("content", "Comment Cannot Be Empty")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
   (req, res, next) => {
-    const timestamp = new Date();
-    const newComment = new Comment({
-      timestamp,
-      content: req.body.content,
-      author: req.user,
-      parent: req.body.parent,
-      commentOf: req.params.postid,
-    });
-    newComment.save((err) => {
-      if (err) next(err);
-      res.json(newComment.url);
-    });
+    const errors = validatonResult(req);
+    if (!errors.isEmpty()) {
+      res.json({
+        content: req.body.content,
+        errors: errors.array().map((error) => error.msg),
+      });
+    } else {
+      const timestamp = new Date();
+      const newComment = new Comment({
+        timestamp,
+        content: req.body.content,
+        author: req.user,
+        parent: req.body.parent,
+        commentOf: req.params.postid,
+      });
+      newComment.save((err) => {
+        if (err) next(err);
+        res.json(newComment.url);
+      });
+    }
   },
 ];
 
@@ -38,13 +51,24 @@ module.exports.getComment = (req, res, next) => {
 };
 
 module.exports.updateComment = [
-  sanitize,
+  body("content", "Comment Cannot Be Empty")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
   (req, res, next) => {
-    Comment.findByIdAndUpdate(req.params.id).exec((err) => {
-      if (err) next(err);
-      Comment.findById(req.params.id).exec((err, comment) => {
-        res.json(comment);
+    const errors = validatonResult();
+    if (!errors.isEmpty()) {
+      res.json({
+        content: req.body.content,
+        errors: errors.array().map((error) => error.msg),
       });
-    });
+    } else {
+      Comment.findByIdAndUpdate(req.params.id).exec((err) => {
+        if (err) next(err);
+        Comment.findById(req.params.id).exec((err, comment) => {
+          res.json(comment);
+        });
+      });
+    }
   },
 ];
