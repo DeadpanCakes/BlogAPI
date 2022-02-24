@@ -1,7 +1,4 @@
-const async = require("async");
-
 const Comment = require("../models/comment");
-const User = require("../models/user");
 
 const sanitize = (req, res, next) => {
   console.log("sanitize here");
