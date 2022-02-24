@@ -59,8 +59,8 @@ module.exports.updateUser = [
   body("firstName", "First Name Required").trim().isLength({ min: 1 }).escape(),
   body("lastName", "Last Name Required").trim().isLength({ min: 1 }).escape(),
   (req, res, next) => {
-    const errors = validationResult(req.body);
-    if (errors.isEmpty()) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       res.send({
         username: req.body.username,
         firstName: req.body.firstName,
