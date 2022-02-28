@@ -1,9 +1,10 @@
 const passport = require("passport");
 
-module.exports.login = passport.authenticate(
-  "local",
-  { failureRedirect: "/login", failureMessage: true },
+module.exports.login = [
+  passport.authenticate("local", {
+    failureRedirect: "/api/login",
+  }),
   (req, res) => {
-    res.send("successfully authenticated");
-  }
-);
+    res.send("success");
+  },
+];
