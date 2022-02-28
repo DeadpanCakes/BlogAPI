@@ -28,6 +28,9 @@ passport.use(
   new LocalStrategy((username, password, next) => {
     User.findOne({ username }).exec((err, user) => {
       if (err) next(err);
+      if (!user) {
+        return next(null, false, {message: "User Does Not Exist"})
+      }
       bcrypt.compare(password, user.password, (err, res) => {
         if (err) next(err);
         if (res) {
@@ -40,6 +43,17 @@ passport.use(
   })
 );
 
+passport.serializeUser((user, next) => {
+  next(null, user.id);
+});
+passport.deserializeUser((id, next) => {
+  User.findById(id, (err, user) =>{
+    next(err, user);
+  });
+});
+
+app.use(passport.initialize());
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -47,6 +61,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/api/users", router.users);
+app.use("/api/login", router.login);
 app.use("/api", router.comments);
 app.use("/api/posts", router.posts);
 app.use("/", (req, res) => res.send("Home Page"));
