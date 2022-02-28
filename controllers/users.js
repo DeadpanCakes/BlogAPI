@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const { body, validationResult } = require("express-validator");
 
 const User = require("../models/user");
@@ -6,14 +7,13 @@ module.exports.postUser = [
   body("username", "Username Required").trim().isLength({ min: 1 }).escape(),
   body("firstName", "First Name Required").trim().isLength({ min: 1 }).escape(),
   body("lastName", "Last Name Required").trim().isLength({ min: 1 }).escape(),
+  body("password", "Password Required").trim().isLength({ min: 1 }).escape(),
   (req, res, next) => {
     const errors = validationResult(req);
     const { username, firstName, lastName } = req.body;
-    console.log(req.body);
     User.findOne({ username }).exec((err, existingUser) => {
       if (err) next(err);
       if (existingUser) {
-        console.log(existingUser);
         res.send("username taken");
       } else {
         if (!errors.isEmpty()) {
@@ -24,15 +24,19 @@ module.exports.postUser = [
             errors: errors.array().map((error) => error.msg),
           });
         } else {
-          const newUser = new User({
-            username,
-            firstName,
-            lastName,
-            isAdmin: false,
-          });
-          newUser.save((err) => {
+          bcrypt.hash(req.body.password, 10, (err, encryptedPass) => {
             if (err) next(err);
-            res.redirect("/users");
+            const newUser = new User({
+              username,
+              firstName,
+              lastName,
+              password: encryptedPass,
+              isAdmin: false,
+            });
+            newUser.save((err) => {
+              if (err) next(err);
+              res.redirect("/users");
+            });
           });
         }
       }
