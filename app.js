@@ -9,7 +9,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const bcrypt = require("bcrypt");
 
-var router = require("./routes/index"); 
+var router = require("./routes/index");
 const User = require("./models/user");
 
 var app = express();
@@ -29,16 +29,17 @@ passport.use(
     User.findOne({ username }).exec((err, user) => {
       if (err) next(err);
       if (!user) {
-        return next(null, false, {message: "User Does Not Exist"})
+        return next(null, false, { message: "User Does Not Exist" });
+      } else {
+        bcrypt.compare(password, user.password, (err, res) => {
+          if (err) next(err);
+          if (res) {
+            return next(null, user);
+          } else {
+            return next(null, false, { message: "Wrong Password" });
+          }
+        });
       }
-      bcrypt.compare(password, user.password, (err, res) => {
-        if (err) next(err);
-        if (res) {
-          return next(null, user);
-        } else {
-          return next(null, false, { message: "Wrong Password" });
-        }
-      });
     });
   })
 );
@@ -47,7 +48,7 @@ passport.serializeUser((user, next) => {
   next(null, user.id);
 });
 passport.deserializeUser((id, next) => {
-  User.findById(id, (err, user) =>{
+  User.findById(id, (err, user) => {
     next(err, user);
   });
 });
