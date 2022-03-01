@@ -2,44 +2,17 @@ var express = require("express");
 var router = express.Router();
 
 const userController = require("../controllers/users");
+const verifyToken = require("../utils/verifyJWT");
 
 /* GET users listing. */
-router.get(
-  "/",
-  (req, res, next) => {
-    console.log("verify token");
-    next();
-  },
-  userController.getUsers
-);
+router.get("/", userController.getUsers);
 
-router.get(
-  "/:id",
-  (req, res, next) => {
-    console.log("verify token");
-    next();
-  },
-  userController.getUser
-);
+router.get("/:id", userController.getUser);
 
 router.post("/", userController.postUser);
 
-router.put(
-  "/:id",
-  (req, res, next) => {
-    console.log("verify token");
-    next();
-  },
-  userController.updateUser
-);
+router.put("/:id", verifyToken, userController.updateUser);
 
-router.delete(
-  "/:id",
-  (req, res, next) => {
-    console.log("verify token");
-    next();
-  },
-  userController.deleteUser
-);
+router.delete("/:id", verifyToken, userController.deleteUser);
 
 module.exports = router;
