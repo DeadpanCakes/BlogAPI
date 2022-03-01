@@ -27,7 +27,6 @@ module.exports.postPost = [
             errors: errors.array().map((error) => error.msg),
           });
         } else {
-          console.log(user);
           const timestamp = new Date();
           const newPost = new Post({
             isPublished,
@@ -82,17 +81,16 @@ module.exports.updatePost = [
       } else {
         async.parallel(
           {
-            post: (cb) => Post.findById(req.params.id).populate("author").exec(cb),
+            post: (cb) =>
+              Post.findById(req.params.id).populate("author").exec(cb),
             loggedUser: (cb) => User.findById(user._id).exec(cb),
           },
           (err, results) => {
             if (err) {
-              console.log(err)
               next(err);
             } else if (!results.post) {
               res.sendStatus(404);
             } else if (!results.post.author.equals(results.loggedUser)) {
-              console.log(results.post.author, ", ", results.loggedUser)
               res.sendStatus(403);
             } else {
               Post.findByIdAndUpdate(req.params.id, {
@@ -117,8 +115,32 @@ module.exports.updatePost = [
 ];
 
 module.exports.deletePost = (req, res, next) => {
-  Post.findByIdAndDelete(req.params.id).exec((err) => {
-    if (err) next(err);
-    res.redirect("/api/posts");
+  jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
+    async.parallel(
+      {
+        post: (cb) => {
+          Post.findById(req.params.id).populate("author").exec(cb);
+        },
+        loggedUser: (cb) => {
+          User.findById(user._id).exec(cb);
+        },
+      },
+      (err, results) => {
+        const { post, loggedUser } = results;
+        if (err) {
+          next(err);
+        } else if (!(loggedUser.isAdmin || post.author.equals(loggedUser))) {
+          res.sendStatus(403);
+        } else {
+          Post.findByIdAndDelete(req.params.id).exec((err) => {
+            if (err) {
+              next(err);
+            } else {
+              res.redirect("/api/posts");
+            }
+          });
+        }
+      }
+    );
   });
 };
