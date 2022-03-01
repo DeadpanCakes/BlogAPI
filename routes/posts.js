@@ -8,15 +8,11 @@ router.get("/", (req, res, next) => {
   res.send("return list of posts");
 });
 
-router.get("/:id", (req, res, next) => {
-  res.send("return specified post");
-});
+router.get("/:id", postController.getPost);
 
 router.post("/", verifyToken, postController.postPost);
 
-router.put("/:id", verifyToken, (req, res, next) => {
-  res.send("edit specified post");
-});
+router.put("/:id", verifyToken, postController.updatePost);
 
 router.delete("/:id", verifyToken, (req, res, next) => {
   res.send("delete specified token");
