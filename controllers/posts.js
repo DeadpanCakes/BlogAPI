@@ -1,4 +1,5 @@
 const { body, validationResult } = require("express-validator");
+const jwt = require("jsonwebtoken");
 const Post = require("../models/post");
 
 module.exports.postPost = [
@@ -9,31 +10,38 @@ module.exports.postPost = [
   body("title", "Post Must Have Title").trim().isLength({ min: 1 }).escape(),
   (req, res, next) => {
     const errors = validationResult(req);
-    const { isPublished, tags, content, title } = req.body;
-    if (!errors.isEmpty()) {
-      res.json({
-        isPublished,
-        tags,
-        content,
-        title,
-        errors: errors.array().map((error) => error.msg),
-      });
-    } else {
-      const timestamp = new Date();
-      const newPost = new Post({
-        isPublished,
-        timestamp,
-        tags,
-        author: req.user,
-        lastUpdate: timestamp,
-        content,
-        title,
-      });
-      newPost.save((err) => {
-        if (err) next(err);
-        res.redirect(newPost.url);
-      });
-    }
+    jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
+      if (err) {
+        res.sendStatus(403);
+      } else {
+        const { isPublished, tags, content, title } = req.body;
+        if (!errors.isEmpty()) {
+          res.json({
+            isPublished,
+            tags,
+            content,
+            title,
+            errors: errors.array().map((error) => error.msg),
+          });
+        } else {
+          console.log(user);
+          const timestamp = new Date();
+          const newPost = new Post({
+            isPublished,
+            timestamp,
+            tags,
+            author: user._id,
+            lastUpdate: timestamp,
+            content,
+            title,
+          });
+          newPost.save((err) => {
+            if (err) next(err);
+            res.redirect(newPost.url);
+          });
+        }
+      }
+    });
   },
 ];
 
