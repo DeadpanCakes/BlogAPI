@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
 const { body, validationResult } = require("express-validator");
+const jwt = require("jsonwebtoken");
+const async = require("async");
 
 const User = require("../models/user");
 
@@ -35,7 +37,7 @@ module.exports.postUser = [
             });
             newUser.save((err) => {
               if (err) next(err);
-              res.redirect("/users");
+              res.redirect(newUser.url);
             });
           });
         }
@@ -72,23 +74,71 @@ module.exports.updateUser = [
         errors: errors.array().map((error) => error.msg),
       });
     } else {
-      User.findByIdAndUpdate(req.params.id, req.body).exec((err) => {
-        if (err) next(err);
-        User.findById(req.params.id).exec((err, user) => {
-          if (err) next(err);
-          res.json(user);
-        });
+      jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
+        if (err) {
+          next(err);
+        } else {
+          async.parallel(
+            {
+              targetUser: (cb) => User.findById(req.params.id).exec(cb),
+              loggedUser: (cb) => User.findById(user._id).exec(cb),
+            },
+            (err, results) => {
+              if (err) {
+                next(err);
+              } else {
+                const { targetUser, loggedUser } = results;
+                if (!(loggedUser.isAdmin || targetUser.equals(loggedUser))) {
+                  res.sendStatus(403);
+                } else {
+                  User.findByIdAndUpdate(req.params.id, req.body).exec(
+                    (err) => {
+                      if (err) next(err);
+                      User.findById(req.params.id).exec((err, user) => {
+                        if (err) next(err);
+                        res.json(user);
+                      });
+                    }
+                  );
+                }
+              }
+            }
+          );
+        }
       });
     }
   },
 ];
 
 module.exports.deleteUser = (req, res, next) => {
-  User.findByIdAndDelete(req.params.id).exec((err) => {
-    if (err) next(err);
-    User.find().exec((err, users) => {
-      if (err) next(err);
-      res.json(users);
-    });
+  jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
+    if (err) {
+      next(err);
+    } else {
+      async.parallel(
+        {
+          targetUser: (cb) => User.findById(req.params.id).exec(cb),
+          loggedUser: (cb) => User.findById(user._id).exec(cb),
+        },
+        (err, results) => {
+          if (err) {
+            next(err);
+          } else {
+            const { targetUser, loggedUser } = results;
+            if (!(loggedUser.isAdmin || targetUser.equals(loggedUser))) {
+              res.sendStatus(403);
+            } else {
+              User.findByIdAndDelete(req.params.id).exec((err) => {
+                if (err) next(err);
+                User.find().exec((err, users) => {
+                  if (err) next(err);
+                  res.json(users);
+                });
+              });
+            }
+          }
+        }
+      );
+    }
   });
 };
