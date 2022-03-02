@@ -56,11 +56,11 @@ module.exports.getPosts = (req, res, next) => {
   });
 };
 
-module.exports.getPost = (req, res, next) => {
+module.exports.getPost = async (req, res, next) => {
   if (!isIDValid(req.params.id)) {
     res.sendStatus(404);
   } else {
-    if (!doesDocExist(req.params.id)) {
+    if (!await doesDocExist(req.params.id, Post)) {
       res.sendStatus(404);
     } else {
       Post.findById(req.params.id).exec((err, post) => {
