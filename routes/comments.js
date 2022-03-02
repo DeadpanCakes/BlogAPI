@@ -15,13 +15,13 @@ router.post(
 );
 
 router.put(
-  "/posts/:postid/comments/commentid",
+  "/posts/:postid/comments/:commentid",
   verifyToken,
   commentController.updateComment
 );
 
 router.delete(
-  "/posts/:postid/comments/commentid",
+  "/posts/:postid/comments/:commentid",
   verifyToken,
   commentController.deleteComment
 );
