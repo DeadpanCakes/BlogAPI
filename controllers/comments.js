@@ -6,11 +6,6 @@ const isIDValid = require("../utils/isIDValid");
 const doesDocExist = require("../utils/doesDocExist");
 const User = require("../models/user");
 
-const sanitize = (req, res, next) => {
-  console.log("sanitize here");
-  next();
-};
-
 module.exports.postComment = [
   body("content", "Comment Cannot Be Empty")
     .trim()
