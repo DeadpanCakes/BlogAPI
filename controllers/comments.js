@@ -6,6 +6,7 @@ const Comment = require("../models/comment");
 const isIDValid = require("../utils/isIDValid");
 const doesDocExist = require("../utils/doesDocExist");
 const User = require("../models/user");
+const Post = require("../models/post");
 
 module.exports.postComment = [
   body("content", "Comment Cannot Be Empty")
@@ -40,9 +41,12 @@ module.exports.postComment = [
 ];
 
 module.exports.getComments = (req, res, next) => {
-  Comment.find().exec((err, comments) => {
+  Post.findById(req.params.id).exec((err, post) => {
     if (err) next(err);
-    res.json(comments);
+    Comment.where({ commentOf: post }).exec((err, comments) => {
+      if (err) next(err);
+      res.json(comments);
+    });
   });
 };
 
