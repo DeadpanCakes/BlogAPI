@@ -6,7 +6,7 @@ const verifyToken = require("../utils/verifyJWT");
 
 router.get("/posts/:postid/comments", commentController.getComments);
 
-router.get("/posts/:postid/comments/commentid", commentController.getComment);
+router.get("/posts/:postid/comments/:commentid", commentController.getComment);
 
 router.post(
   "/posts/:postid/comments",
