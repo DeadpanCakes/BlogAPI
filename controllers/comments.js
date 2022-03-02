@@ -1,5 +1,6 @@
 const { body, validatonResult } = require("express-validator");
 const async = require("async");
+const jwt = require("jsonwebtoken");
 
 const Comment = require("../models/comment");
 const isIDValid = require("../utils/isIDValid");
@@ -12,26 +13,29 @@ module.exports.postComment = [
     .isLength({ min: 1 })
     .escape(),
   (req, res, next) => {
-    const errors = validatonResult(req);
-    if (!errors.isEmpty()) {
-      res.json({
-        content: req.body.content,
-        errors: errors.array().map((error) => error.msg),
-      });
-    } else {
-      const timestamp = new Date();
-      const newComment = new Comment({
-        timestamp,
-        content: req.body.content,
-        author: req.user,
-        parent: req.body.parent,
-        commentOf: req.params.postid,
-      });
-      newComment.save((err) => {
-        if (err) next(err);
-        res.json(newComment.url);
-      });
-    }
+    jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
+      if (err) next(err);
+      const errors = validatonResult(req);
+      if (!errors.isEmpty()) {
+        res.json({
+          content: req.body.content,
+          errors: errors.array().map((error) => error.msg),
+        });
+      } else {
+        const timestamp = new Date();
+        const newComment = new Comment({
+          timestamp,
+          content: req.body.content,
+          author: user,
+          parent: req.body.parent,
+          commentOf: req.params.postid,
+        });
+        newComment.save((err) => {
+          if (err) next(err);
+          res.json(newComment.url);
+        });
+      }
+    });
   },
 ];
 
@@ -78,29 +82,31 @@ module.exports.deleteComment = (req, res, next) => {
   } else if (!doesDocExist(req.params.id, Comment)) {
     res.sendStatus(404);
   } else {
-    //pull user
-    let placeholderUser = {
-      _id: null,
-    };
-    async.parallel(
-      {
-        comment: (cb) => Comment.findById(req.params.commentid).exec(cb),
-        loggedUser: (cb) => User.findById(placeholderUser._id).exec(cb),
-      },
-      (err, results) => {
-        if (err) {
-          next(err);
-        } else {
-          const { comment, loggedUser } = results;
-          if (!comment.author.equals(loggedUser)) {
-            res.sendStatus(403);
-          } else {
-            Comment.findByIdAndDelete(req.params.id).exec((err) => {
-              res.redirect(`/api/posts/${postid}/comments`);
-            });
+    jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
+      if (err) {
+        next(err);
+      } else {
+        async.parallel(
+          {
+            comment: (cb) => Comment.findById(req.params.commentid).exec(cb),
+            loggedUser: (cb) => User.findById(user._id).exec(cb),
+          },
+          (err, results) => {
+            if (err) {
+              next(err);
+            } else {
+              const { comment, loggedUser } = results;
+              if (!comment.author.equals(loggedUser)) {
+                res.sendStatus(403);
+              } else {
+                Comment.findByIdAndDelete(req.params.id).exec((err) => {
+                  res.redirect(`/api/posts/${postid}/comments`);
+                });
+              }
+            }
           }
-        }
+        );
       }
-    );
+    });
   }
 };
