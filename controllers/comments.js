@@ -1,4 +1,4 @@
-const { body, validatonResult } = require("express-validator");
+const { body, validationResult } = require("express-validator");
 const async = require("async");
 const jwt = require("jsonwebtoken");
 
@@ -16,7 +16,7 @@ module.exports.postComment = [
   (req, res, next) => {
     jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
       if (err) next(err);
-      const errors = validatonResult(req);
+      const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.json({
           content: req.body.content,
@@ -33,7 +33,7 @@ module.exports.postComment = [
         });
         newComment.save((err) => {
           if (err) next(err);
-          res.json(newComment.url);
+          res.redirect(`/api/posts/${req.params.postid}` + newComment.url);
         });
       }
     });
@@ -51,7 +51,7 @@ module.exports.getComments = (req, res, next) => {
 };
 
 module.exports.getComment = (req, res, next) => {
-  Comment.findById(req.params.id).exec((err, comment) => {
+  Comment.findById(req.params.commentid).exec((err, comment) => {
     if (err) next(err);
     res.json(comment);
   });
@@ -63,7 +63,7 @@ module.exports.updateComment = [
     .isLength({ min: 1 })
     .escape(),
   (req, res, next) => {
-    const errors = validatonResult();
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.json({
         content: req.body.content,
