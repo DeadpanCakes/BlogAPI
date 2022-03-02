@@ -1,6 +1,10 @@
 const { body, validatonResult } = require("express-validator");
+const async = require("async");
 
 const Comment = require("../models/comment");
+const isIDValid = require("../utils/isIDValid");
+const doesDocExist = require("../utils/doesDocExist");
+const User = require("../models/user");
 
 const sanitize = (req, res, next) => {
   console.log("sanitize here");
@@ -72,3 +76,36 @@ module.exports.updateComment = [
     }
   },
 ];
+
+module.exports.deleteComment = (req, res, next) => {
+  if (!isIDValid(req.params.id)) {
+    res.sendStatus(404);
+  } else if (!doesDocExist(req.params.id, Comment)) {
+    res.sendStatus(404);
+  } else {
+    //pull user
+    let placeholderUser = {
+      _id: null,
+    };
+    async.parallel(
+      {
+        comment: (cb) => Comment.findById(req.params.commentid).exec(cb),
+        loggedUser: (cb) => User.findById(placeholderUser._id).exec(cb),
+      },
+      (err, results) => {
+        if (err) {
+          next(err);
+        } else {
+          const { comment, loggedUser } = results;
+          if (!comment.author.equals(loggedUser)) {
+            res.sendStatus(403);
+          } else {
+            Comment.findByIdAndDelete(req.params.id).exec((err) => {
+              res.redirect(`/api/posts/${postid}/comments`);
+            });
+          }
+        }
+      }
+    );
+  }
+};
