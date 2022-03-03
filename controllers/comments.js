@@ -41,7 +41,7 @@ module.exports.postComment = [
 ];
 
 module.exports.getComments = (req, res, next) => {
-  Post.findById(req.params.id).exec((err, post) => {
+  Post.findById(req.params.postid).exec((err, post) => {
     if (err) next(err);
     Comment.where({ commentOf: post }).exec((err, comments) => {
       if (err) next(err);
@@ -58,25 +58,44 @@ module.exports.getComment = (req, res, next) => {
 };
 
 module.exports.updateComment = [
+  (req, res, next) => {
+    if (!isIDValid) {
+      res.sendStatus(404);
+    } else {
+      next();
+    }
+  },
+  (req, res, next) => {
+    if (!doesDocExist) {
+      res.sendStatus(404);
+    } else {
+      next();
+    }
+  },
   body("content", "Comment Cannot Be Empty")
     .trim()
     .isLength({ min: 1 })
     .escape(),
   (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.json({
-        content: req.body.content,
-        errors: errors.array().map((error) => error.msg),
-      });
-    } else {
-      Comment.findByIdAndUpdate(req.params.id).exec((err) => {
-        if (err) next(err);
-        Comment.findById(req.params.id).exec((err, comment) => {
-          res.json(comment);
+    jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
+      if(err) next(err);
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.json({
+          content: req.body.content,
+          errors: errors.array().map((error) => error.msg),
         });
-      });
-    }
+      } else {
+        Comment.findByIdAndUpdate(req.params.commentid, {
+          content: req.body.content,
+        }).exec((err) => {
+          if (err) next(err);
+          Comment.findById(req.params.commentid).exec((err, comment) => {
+            res.json(comment);
+          });
+        });
+      }
+    });
   },
 ];
 
