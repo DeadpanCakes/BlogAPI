@@ -78,7 +78,7 @@ module.exports.updateComment = [
     .escape(),
   (req, res, next) => {
     jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
-      if(err) next(err);
+      if (err) next(err);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.json({
@@ -86,14 +86,28 @@ module.exports.updateComment = [
           errors: errors.array().map((error) => error.msg),
         });
       } else {
-        Comment.findByIdAndUpdate(req.params.commentid, {
-          content: req.body.content,
-        }).exec((err) => {
-          if (err) next(err);
-          Comment.findById(req.params.commentid).exec((err, comment) => {
-            res.json(comment);
-          });
-        });
+        async.parallel(
+          {
+            comment: (cb) => Comment.findById(req.params.commentid).exec(cb),
+            user: (cb) => User.findById(user._id).exec(cb),
+          },
+          (err, results) => {
+            if (err) next(err);
+            const { comment, user } = results;
+            if (!(comment.author.equals(user) || user.isAdmin)) {
+              res.send(403);
+            } else {
+              Comment.findByIdAndUpdate(req.params.commentid, {
+                content: req.body.content,
+              }).exec((err) => {
+                if (err) next(err);
+                Comment.findById(req.params.commentid).exec((err, comment) => {
+                  res.json(comment);
+                });
+              });
+            }
+          }
+        );
       }
     });
   },
