@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const bcrypt = require("bcrypt");
+const compression = require("compression");
 
 var router = require("./routes/index");
 const User = require("./models/user");
@@ -60,6 +61,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(compression());
 
 app.use("/api/users", router.users);
 app.use("/api/login", router.login);
