@@ -16,7 +16,7 @@ const User = require("./models/user");
 
 var app = express();
 
-app.use(helmet)
+app.use(helmet())
 
 const { DEV_DB_URL } = process.env;
 const mongoDB = process.env.MONGO_URI || DEV_DB_URL;
