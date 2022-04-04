@@ -6,7 +6,7 @@ module.exports.login = [
     failureRedirect: "/api/login",
   }),
   (req, res, next) => {
-    jwt.sign(req.user.toObject(), process.env.PRIVATE_KEY, (err, token) => {
+    jwt.sign(req.user.toObject(), process.env.PRIVATE_KEY, {expiresIn: "1h"}, (err, token) => {
       if (err) next(err);
       res.json({ token });
     });
