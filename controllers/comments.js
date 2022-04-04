@@ -15,26 +15,29 @@ module.exports.postComment = [
     .escape(),
   (req, res, next) => {
     jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
-      if (err) next(err);
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.json({
-          content: req.body.content,
-          errors: errors.array().map((error) => error.msg),
-        });
+      if (err) {
+        next(err);
       } else {
-        const timestamp = new Date();
-        const newComment = new Comment({
-          timestamp,
-          content: req.body.content,
-          author: user,
-          parent: req.body.parent,
-          commentOf: req.params.postid,
-        });
-        newComment.save((err) => {
-          if (err) next(err);
-          res.redirect(`/api/posts/${req.params.postid}` + newComment.url);
-        });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          res.json({
+            content: req.body.content,
+            errors: errors.array().map((error) => error.msg),
+          });
+        } else {
+          const timestamp = new Date();
+          const newComment = new Comment({
+            timestamp,
+            content: req.body.content,
+            author: user,
+            parent: req.body.parent,
+            commentOf: req.params.postid,
+          });
+          newComment.save((err) => {
+            if (err) next(err);
+            res.redirect(`/api/posts/${req.params.postid}` + newComment.url);
+          });
+        }
       }
     });
   },
