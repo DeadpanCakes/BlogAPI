@@ -9,6 +9,8 @@ router.get("/", userController.getUsers);
 
 router.get("/:id", userController.getUser);
 
+router.get("/:id/activity", userController.getUserActivity);
+
 router.post("/", userController.postUser);
 
 router.put("/:id", verifyToken, userController.updateUser);
