@@ -6,9 +6,21 @@ module.exports.login = [
     failureRedirect: "/api/login",
   }),
   (req, res, next) => {
-    jwt.sign(req.user.toObject(), process.env.PRIVATE_KEY, {expiresIn: "1h"}, (err, token) => {
-      if (err) next(err);
-      res.json({ token });
-    });
+    const user = req.user.toObject();
+    const payload = {
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName
+    }
+    jwt.sign(
+      payload,
+      process.env.PRIVATE_KEY,
+      { expiresIn: "1h" },
+      (err, token) => {
+        if (err) next(err);
+        console.log(jwt.decode(token));
+        res.json({ token });
+      }
+    );
   },
 ];
