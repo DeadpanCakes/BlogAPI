@@ -58,20 +58,21 @@ module.exports.getUser = (req, res, next) => {
 module.exports.getUserActivity = (req, res, next) => {
   async.parallel(
     {
+      user: (cb) => {
+        User.findById(req.params.id).exec(cb);
+      },
       posts: (cb) => {
-        Post.find({ author: req.params.id }).limit(3).populate("url").exec(cb);
+        Post.find({ author: req.params.id }).limit(3).exec(cb);
       },
       comments: (cb) => {
-        Comment.find({ author: req.params.id })
-          .limit(3)
-          .populate("url")
-          .exec(cb);
+        Comment.find({ author: req.params.id }).limit(3).exec(cb);
       },
     },
     (err, results) => {
       if (err) {
         next(err);
       } else {
+        console.log(results);
         res.json(results);
       }
     }
