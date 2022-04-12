@@ -50,23 +50,27 @@ module.exports.postPost = [
 ];
 
 module.exports.getPosts = (req, res, next) => {
-  Post.find().exec((err, posts) => {
-    if (err) next(err);
-    res.json(posts);
-  });
+  Post.find()
+    .populate("author")
+    .exec((err, posts) => {
+      if (err) next(err);
+      res.json(posts);
+    });
 };
 
 module.exports.getPost = async (req, res, next) => {
   if (!isIDValid(req.params.id)) {
     res.sendStatus(404);
   } else {
-    if (!await doesDocExist(req.params.id, Post)) {
+    if (!(await doesDocExist(req.params.id, Post))) {
       res.sendStatus(404);
     } else {
-      Post.findById(req.params.id).exec((err, post) => {
-        if (err) next(err);
-        res.json(post);
-      });
+      Post.findById(req.params.id)
+        .populate("author")
+        .exec((err, post) => {
+          if (err) next(err);
+          res.json(post);
+        });
     }
   }
 };
