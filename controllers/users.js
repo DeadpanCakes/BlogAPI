@@ -62,10 +62,17 @@ module.exports.getUserActivity = (req, res, next) => {
         User.findById(req.params.id).exec(cb);
       },
       posts: (cb) => {
-        Post.find({ author: req.params.id }).limit(3).exec(cb);
+        Post.find({ author: req.params.id })
+          .limit(3)
+          .populate("author")
+          .exec(cb);
       },
       comments: (cb) => {
-        Comment.find({ author: req.params.id }).limit(3).exec(cb);
+        Comment.find({ author: req.params.id })
+          .limit(3)
+          .populate("author")
+          .populate("commentOf")
+          .exec(cb);
       },
     },
     (err, results) => {
