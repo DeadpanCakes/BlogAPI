@@ -16,4 +16,11 @@ postSchema.virtual("url").get(function () {
   return `/api/posts/${this._id}`;
 });
 
+userSchema.virtual("fetchUrl").get(function () {
+  return `/users/${this._id}`;
+});
+
+postSchema.set("toObject", { virtuals: true });
+postSchema.set("toJSON", { virtuals: true });
+
 module.exports = mongoose.model("Post", postSchema);

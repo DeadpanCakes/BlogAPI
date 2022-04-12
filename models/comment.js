@@ -6,11 +6,18 @@ const commentSchema = new Schema({
   parent: { required: false, type: Schema.Types.ObjectId, ref: "Comment" },
   timestamp: Date,
   content: String,
-  commentOf: {type: Schema.Types.ObjectId, ref:"Post"}
+  commentOf: { type: Schema.Types.ObjectId, ref: "Post" },
 });
 
 commentSchema.virtual("url").get(function () {
   return `/comments/${this._id}`;
 });
+
+userSchema.virtual("fetchUrl").get(function () {
+  return `/users/${this._id}`;
+});
+
+commentSchema.set("toObject", { virtuals: true });
+commentSchema.set("toJSON", { virtuals: true });
 
 module.exports = mongoose.model("Comment", commentSchema);
