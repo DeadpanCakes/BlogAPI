@@ -46,18 +46,24 @@ module.exports.postComment = [
 module.exports.getComments = (req, res, next) => {
   Post.findById(req.params.postid).exec((err, post) => {
     if (err) next(err);
-    Comment.where({ commentOf: post }).exec((err, comments) => {
-      if (err) next(err);
-      res.json(comments);
-    });
+    Comment.where({ commentOf: post })
+      .populate("author")
+      .populate("commentOf")
+      .exec((err, comments) => {
+        if (err) next(err);
+        res.json(comments);
+      });
   });
 };
 
 module.exports.getComment = (req, res, next) => {
-  Comment.findById(req.params.commentid).exec((err, comment) => {
-    if (err) next(err);
-    res.json(comment);
-  });
+  Comment.findById(req.params.commentid)
+    .populate("author")
+    .populate("commentOf")
+    .exec((err, comment) => {
+      if (err) next(err);
+      res.json(comment);
+    });
 };
 
 module.exports.updateComment = [
