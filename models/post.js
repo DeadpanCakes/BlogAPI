@@ -16,7 +16,7 @@ postSchema.virtual("url").get(function () {
   return `/api/posts/${this._id}`;
 });
 
-userSchema.virtual("fetchUrl").get(function () {
+postSchema.virtual("fetchUrl").get(function () {
   return `/users/${this._id}`;
 });
 

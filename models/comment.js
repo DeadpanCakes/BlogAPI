@@ -13,7 +13,7 @@ commentSchema.virtual("url").get(function () {
   return `/comments/${this._id}`;
 });
 
-userSchema.virtual("fetchUrl").get(function () {
+commentSchema.virtual("fetchUrl").get(function () {
   return `/users/${this._id}`;
 });
 
