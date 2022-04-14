@@ -17,7 +17,7 @@ postSchema.virtual("url").get(function () {
 });
 
 postSchema.virtual("fetchUrl").get(function () {
-  return `/users/${this._id}`;
+  return `/posts/${this._id}`;
 });
 
 postSchema.set("toObject", { virtuals: true });
