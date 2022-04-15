@@ -10,11 +10,11 @@ const commentSchema = new Schema({
 });
 
 commentSchema.virtual("url").get(function () {
-  return `/api/posts/${this.parent._id}/comments/${this._id}`;
+  return `/api/posts/${this.commentOf._id}/comments/${this._id}`;
 });
 
 commentSchema.virtual("fetchUrl").get(function () {
-  return `/posts/${this.parent._id}/comments/${this._id}`;
+  return `/posts/${this.commentOf._id}/comments/${this._id}`;
 });
 
 commentSchema.set("toObject", { virtuals: true });
