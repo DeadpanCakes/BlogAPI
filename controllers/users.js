@@ -6,6 +6,9 @@ const async = require("async");
 const User = require("../models/user");
 const Comment = require("../models/comment");
 const Post = require("../models/post");
+const isIDValid = require("../utils/isIDValid");
+const doesDocExist = require("../utils/doesDocExist");
+const validateParameter = require("../utils/validateParameter");
 
 module.exports.postUser = [
   body("username", "Username Required").trim().isLength({ min: 1 }).escape(),
@@ -48,42 +51,57 @@ module.exports.postUser = [
   },
 ];
 
-module.exports.getUser = (req, res, next) => {
-  User.findById(req.params.id).exec((err, user) => {
-    if (err) next(err);
-    res.json(user);
-  });
-};
-
-module.exports.getUserActivity = (req, res, next) => {
-  async.parallel(
-    {
-      user: (cb) => {
-        User.findById(req.params.id).exec(cb);
-      },
-      posts: (cb) => {
-        Post.find({ author: req.params.id })
-          .limit(3)
-          .populate("author")
-          .exec(cb);
-      },
-      comments: (cb) => {
-        Comment.find({ author: req.params.id })
-          .limit(3)
-          .populate("author")
-          .populate("commentOf")
-          .exec(cb);
-      },
-    },
-    (err, results) => {
+module.exports.getUser = async (req, res, next) => {
+  const validation = await validateParameter(req.params.id, User);
+  if (!validation.isValid) {
+    res.status(validation.status);
+    res.json("User " + validation.errMsg);
+  } else {
+    User.findById(req.params.id).exec((err, user) => {
       if (err) {
         next(err);
       } else {
-        console.log(results);
-        res.json(results);
+        res.status(200);
+        res.json(user);
       }
-    }
-  );
+    });
+  }
+};
+
+module.exports.getUserActivity = async (req, res, next) => {
+  const validation = await validateParameter(req.params.id, User);
+  if (!validation.isValid) {
+    res.status(validation.status);
+    res.json("User " + validation.errMsg);
+  } else {
+    async.parallel(
+      {
+        user: (cb) => {
+          User.findById(req.params.id).exec(cb);
+        },
+        posts: (cb) => {
+          Post.find({ author: req.params.id })
+            .limit(3)
+            .populate("author")
+            .exec(cb);
+        },
+        comments: (cb) => {
+          Comment.find({ author: req.params.id })
+            .limit(3)
+            .populate("author")
+            .populate("commentOf")
+            .exec(cb);
+        },
+      },
+      (err, results) => {
+        if (err) {
+          next(err);
+        } else {
+          res.json(results);
+        }
+      }
+    );
+  }
 };
 
 module.exports.getUsers = (req, res, next) => {
