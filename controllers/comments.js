@@ -44,26 +44,54 @@ module.exports.postComment = [
 ];
 
 module.exports.getComments = (req, res, next) => {
-  Post.findById(req.params.postid).exec((err, post) => {
-    if (err) next(err);
-    Comment.where({ commentOf: post })
-      .populate("author")
-      .populate("commentOf")
-      .exec((err, comments) => {
-        if (err) next(err);
-        res.json(comments);
-      });
-  });
+  const { postid } = req.params;
+  if (!isIDValid(postid)) {
+    res.status(404);
+    res.json({ message: `Post ${postid} is invalid` });
+  } else if (!doesDocExist(postid, Post)) {
+    res.status(404);
+    res.json({ message: `Post ${postid} does not exist` });
+  } else {
+    Post.findById(req.params.postid).exec((err, post) => {
+      if (err) next(err);
+      Comment.where({ commentOf: post })
+        .populate("author")
+        .populate("commentOf")
+        .exec((err, comments) => {
+          if (err) next(err);
+          res.json(comments);
+        });
+    });
+  }
 };
 
-module.exports.getComment = (req, res, next) => {
-  Comment.findById(req.params.commentid)
-    .populate("author")
-    .populate("commentOf")
-    .exec((err, comment) => {
-      if (err) next(err);
-      res.json(comment);
-    });
+module.exports.getComment = async (req, res, next) => {
+  const { postid, commentid } = req.params;
+  if (!isIDValid(postid)) {
+    res.status(404);
+    res.json({ message: `Post ${postid} is invalid` });
+  } else if (!isIDValid(commentid)) {
+    res.status(404);
+    res.json({ message: `Comment ${commentid} is invalid` });
+  } else {
+    const postExists = await doesDocExist(postid, Post);
+    const commentExists = await doesDocExist(commentid, Comment);
+    if (!postExists) {
+      res.status(404);
+      res.json({ message: `Post ${postid} does not exist` });
+    } else if (commentExists) {
+      res.status(404);
+      res.json({ message: `Comment ${commentid} does not exist` });
+    } else {
+      Comment.findById(req.params.commentid)
+        .populate("author")
+        .populate("commentOf")
+        .exec((err, comment) => {
+          if (err) next(err);
+          res.json(comment);
+        });
+    }
+  }
 };
 
 module.exports.updateComment = [
