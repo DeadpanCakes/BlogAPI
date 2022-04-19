@@ -66,21 +66,18 @@ module.exports.getComments = (req, res, next) => {
 };
 
 module.exports.getComment = async (req, res, next) => {
+  res.status(404);
   const { postid, commentid } = req.params;
   if (!isIDValid(postid)) {
-    res.status(404);
     res.json({ message: `Post ${postid} is invalid` });
   } else if (!isIDValid(commentid)) {
-    res.status(404);
     res.json({ message: `Comment ${commentid} is invalid` });
   } else {
     const postExists = await doesDocExist(postid, Post);
     const commentExists = await doesDocExist(commentid, Comment);
     if (!postExists) {
-      res.status(404);
       res.json({ message: `Post ${postid} does not exist` });
-    } else if (commentExists) {
-      res.status(404);
+    } else if (!commentExists) {
       res.json({ message: `Comment ${commentid} does not exist` });
     } else {
       Comment.findById(req.params.commentid)
@@ -88,7 +85,14 @@ module.exports.getComment = async (req, res, next) => {
         .populate("commentOf")
         .exec((err, comment) => {
           if (err) next(err);
-          res.json(comment);
+          if (comment.commentOf._id.toString() !== postid) {
+            res.json({
+              message: `Post ${postid} does not have comment ${commentid}`,
+            });
+          } else {
+            res.status(200);
+            res.json(comment);
+          }
         });
     }
   }
