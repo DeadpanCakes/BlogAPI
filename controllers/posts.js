@@ -6,6 +6,7 @@ const Post = require("../models/post");
 const User = require("../models/user");
 const isIDValid = require("../utils/isIDValid");
 const doesDocExist = require("../utils/doesDocExist");
+const validateParameter = require("../utils/validateParameter");
 
 module.exports.postPost = [
   body("content", "Post Must Be Filled Out")
@@ -59,8 +60,10 @@ module.exports.getPosts = (req, res, next) => {
 };
 
 module.exports.getPost = async (req, res, next) => {
-  if (!isIDValid(req.params.id)) {
-    res.sendStatus(404);
+  const validation = await validateParameter(req.params.id, Post);
+  if (!validation.isValid) {
+    res.status(validation.status);
+    res.json({ msg: validation.errMsg });
   } else {
     if (!(await doesDocExist(req.params.id, Post))) {
       res.sendStatus(404);
