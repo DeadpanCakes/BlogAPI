@@ -7,6 +7,7 @@ const isIDValid = require("../utils/isIDValid");
 const doesDocExist = require("../utils/doesDocExist");
 const User = require("../models/user");
 const Post = require("../models/post");
+const validateParameter = require("../utils/validateParameter");
 
 module.exports.postComment = [
   body("content", "Comment Cannot Be Empty")
@@ -33,9 +34,9 @@ module.exports.postComment = [
             parent: req.body.parent,
             commentOf: req.params.postid,
           });
-          newComment.save((err) => {
+          newComment.save((err, comment) => {
             if (err) next(err);
-            res.redirect(`/api/posts/${req.params.postid}` + newComment.url);
+            res.json(comment);
           });
         }
       }
@@ -129,7 +130,11 @@ module.exports.updateComment = [
       } else {
         async.parallel(
           {
-            comment: (cb) => Comment.findById(req.params.commentid).exec(cb),
+            comment: (cb) =>
+              Comment.findById(req.params.commentid)
+                .populate("author")
+                .populate("commentOf")
+                .exec(cb),
             user: (cb) => User.findById(user._id).exec(cb),
           },
           (err, results) => {
@@ -154,11 +159,11 @@ module.exports.updateComment = [
   },
 ];
 
-module.exports.deleteComment = (req, res, next) => {
-  if (!isIDValid(req.params.id)) {
-    res.sendStatus(404);
-  } else if (!doesDocExist(req.params.id, Comment)) {
-    res.sendStatus(404);
+module.exports.deleteComment = async (req, res, next) => {
+  const validation = await validateParameter(req.params.commentid, Comment);
+  if (!validation.isValid) {
+    res.status(validation.status);
+    res.json(validation.errMsg);
   } else {
     jwt.verify(req.token, process.env.PRIVATE_KEY, (err, user) => {
       if (err) {
@@ -166,7 +171,11 @@ module.exports.deleteComment = (req, res, next) => {
       } else {
         async.parallel(
           {
-            comment: (cb) => Comment.findById(req.params.commentid).exec(cb),
+            comment: (cb) =>
+              Comment.findById(req.params.commentid)
+                .populate("author")
+                .populate("commentOf")
+                .exec(cb),
             loggedUser: (cb) => User.findById(user._id).exec(cb),
           },
           (err, results) => {
@@ -174,11 +183,13 @@ module.exports.deleteComment = (req, res, next) => {
               next(err);
             } else {
               const { comment, loggedUser } = results;
-              if (!comment.author.equals(loggedUser)) {
+              const post = comment.commentOf;
+              if (!comment.author.equals(loggedUser) || user.isAdmin) {
                 res.sendStatus(403);
               } else {
                 Comment.findByIdAndDelete(req.params.id).exec((err) => {
-                  res.redirect(`/api/posts/${postid}/comments`);
+                  if (err) next(err);
+                  res.json({ post, comments: post.url + "/comments" });
                 });
               }
             }
