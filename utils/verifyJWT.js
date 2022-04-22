@@ -7,7 +7,8 @@ const verifyToken = (req, res, next) => {
       next();
     }
   } else {
-    res.sendStatus(403);
+    res.status(403);
+    res.json({msg: "Something went wrong"})
   }
 };
 
