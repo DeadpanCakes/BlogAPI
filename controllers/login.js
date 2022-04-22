@@ -9,9 +9,10 @@ module.exports.login = [
     const user = req.user.toObject();
     const payload = {
       _id: user._id,
+      isAdmin: user.isAdmin,
       firstName: user.firstName,
-      lastName: user.lastName
-    }
+      lastName: user.lastName,
+    };
     jwt.sign(
       payload,
       process.env.PRIVATE_KEY,
