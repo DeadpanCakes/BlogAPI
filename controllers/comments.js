@@ -140,7 +140,7 @@ module.exports.updateComment = [
           (err, results) => {
             if (err) next(err);
             const { comment, user } = results;
-            if (!(comment.author.equals(user) || user.isAdmin)) {
+            if (!(comment.author.equals(user) || !user.isAdmin)) {
               res.send(403);
             } else {
               Comment.findByIdAndUpdate(req.params.commentid, {
@@ -184,10 +184,11 @@ module.exports.deleteComment = async (req, res, next) => {
             } else {
               const { comment, loggedUser } = results;
               const post = comment.commentOf;
-              if (!comment.author.equals(loggedUser) || user.isAdmin) {
-                res.sendStatus(403);
+              if (!comment.author.equals(loggedUser) || !loggedUser.isAdmin) {
+                res.status(403);
+                res.json({message: "Permission denied"})
               } else {
-                Comment.findByIdAndDelete(req.params.id).exec((err) => {
+                Comment.findByIdAndDelete(req.params.commentid).exec((err) => {
                   if (err) next(err);
                   res.json({ post, comments: post.url + "/comments" });
                 });
