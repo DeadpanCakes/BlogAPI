@@ -2,9 +2,7 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 
 module.exports.login = [
-  passport.authenticate("local", {
-    failureRedirect: "/api/login",
-  }),
+  passport.authenticate("local"),
   (req, res, next) => {
     const user = req.user.toObject();
     const payload = {
