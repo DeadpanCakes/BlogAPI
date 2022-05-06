@@ -22,6 +22,7 @@ module.exports.postPost = [
       } else {
         const { isPublished, tags, content, title } = req.body;
         if (!errors.isEmpty()) {
+          res.status = 400;
           res.json({
             isPublished,
             tags,
